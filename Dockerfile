@@ -8,6 +8,8 @@ COPY src ./src
 
 COPY tsconfig.json ./tsconfig.json
 
+COPY src/allowedFileTypes.json ./dist/
+
 RUN npm run build
 
 FROM node:18.16.0-alpine
