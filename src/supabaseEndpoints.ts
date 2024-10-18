@@ -85,6 +85,33 @@ const createSupabaseEndpoints = (upload: multer.Multer) => {
     }
   );
 
+  router.get(
+    "/supabase/file/:fileName",
+    async (req: Request, res: Response): Promise<void> => {
+      const { fileName } = req.params;
+
+      try {
+        const { data, error } = await supabase.storage
+          .from("bucket")
+          .download(`uploads/${fileName}`);
+
+        if (error) {
+          res.status(404).json({ error: "File not found" });
+          return;
+        }
+
+        res.set("Content-Disposition", `attachment; filename="${fileName}"`);
+        res.set("Content-Type", "application/octet-stream");
+
+        const buffer = await data.arrayBuffer();
+        res.send(Buffer.from(buffer));
+      } catch (err) {
+        console.error("Error downloading file:", err);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    }
+  );
+
   return router;
 };
 
