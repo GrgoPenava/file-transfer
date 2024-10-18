@@ -1,9 +1,10 @@
-import express from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import createEndpoints from './endpoints';
+import express from "express";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import createEndpoints from "./endpoints";
 import cors from "cors";
+import createSupabaseEndpoints from "./supabaseEndpoints";
 
 const app = express();
 const port = 3000;
@@ -32,17 +33,9 @@ const fileFilter = (
   }
 };
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDirectory);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
-  },
-});
+const storage = multer.memoryStorage();
 
-const upload = multer({ storage: storage, fileFilter: fileFilter });
+const upload = multer({ storage, fileFilter });
 
 app.use(
   cors({
@@ -52,8 +45,8 @@ app.use(
   })
 );
 
-app.use(createEndpoints(upload));
+app.use(createEndpoints(upload)).use(createSupabaseEndpoints(upload));
 
 app.listen(port, () => {
-    console.log(`File upload service is running on http://localhost:${port}`);
+  console.log(`File upload service is running on http://localhost:${port}`);
 });
